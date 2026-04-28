@@ -2,13 +2,6 @@
 #define __SERVO_H
 #include <stdint.h>
 
-// ===================== 舵机PWM参数配置 =====================
-// 你的TIM3配置：PSC=72-1，ARR=20000-1
-// 1个计数 = 1us，周期20ms，标准舵机信号
-#define SERVO_MIN_PULSE      500     // 0°对应的脉宽(us)
-#define SERVO_MAX_PULSE      2500    // 180°对应的脉宽(us)
-#define MAX_SPLINE_POINTS    6       // 三次样条最多支持6个轨迹点
-
 // ===================== 舵机控制结构体 =====================
 typedef struct{
     float current_angle;             // 当前舵机角度
