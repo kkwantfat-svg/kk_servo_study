@@ -32,8 +32,9 @@ int main(void)
 		
 		// 等待用户输入
 		uint16_t recv_len = 0;
-		uint8_t input_buffer[10] = {0};
-		recv_len = receive_string(input_buffer, 10);
+		uint8_t input_buffer[2] = {0};
+		recv_len = receive_string(input_buffer, 2);  // 接收一个字符，留一个位置给 '\0'
+		u0_printf("You entered: %s\r\n", input_buffer);
 		
 		if(recv_len > 0)
 		{

@@ -38,7 +38,7 @@ void USART0_init(uint32_t baudval)
     /* configure USART stop bit length */
     usart_stop_bit_set(USART0, USART_STB_1BIT);
 
-    dma_enable(1);
+    dma_enable(0);  // 默认不开启DMA模式，使用轮询方式接收数据
 }
 
 // 是否启用dma模式
