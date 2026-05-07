@@ -32,8 +32,8 @@ int main(void)
 		
 		// 等待用户输入
 		uint16_t recv_len = 0;
-		uint8_t input_buffer[2] = {0};
-		recv_len = receive_string(input_buffer, 2);  // 接收一个字符，留一个位置给 '\0'
+		uint8_t input_buffer[4] = {0};
+		recv_len = receive_string(input_buffer, 4);  // 接收用户输入，最多3个字符加一个结尾 '\0'，例如输入 "1\n" 就会被接收为 "1\0"，recv_len 会返回实际接收的字符数，包括结尾 '\0'
 		u0_printf("You entered: %s\r\n", input_buffer);
 		
 		if(recv_len > 0)
