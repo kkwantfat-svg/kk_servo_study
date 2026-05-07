@@ -8,13 +8,13 @@
 #include "tim.h"
 #include "servo.h"
 
-void servo_move_test(void (*function) (float target_angle, uint32_t duration_ms));
+// 测试函数声明
+void servo_test_algorithm(uint8_t algorithm);
+void show_menu(void);
 
 int main(void)
 {
 	USART0_init(115200);
-
-
 	systick_config();
 	DMA0_Init();
 
@@ -22,24 +22,147 @@ int main(void)
 	tim2_init();
 	nvic_config();
 
-	u0_printf("hello world\r\n");
-	u0_printf("*** prescale number: %d ***\r\n", timer_prescaler_read(TIMER1));
+	u0_printf("\r\n=== Servo Motion Control System ===\r\n");
+	u0_printf("Initialize success!\r\n\r\n");
 	
 	while(1)
 	{	
-		// servo_move_raw(90); // 设置传感器角度为90度
-		// delay_1ms(1000); // 延时1秒
-		// servo_move_raw(180); // 设置传感器角度为180度
-		// delay_1ms(1000); // 延时1秒
-		// servo_move_raw(90); // 设置传感器角度为90度
-		// delay_1ms(1000); // 延时1秒
-		// servo_move_raw(0); // 设置传感器角度为0度
-		// delay_1ms(1000); // 延时1秒
-		servo_move_test(servo_move_linear); // 测试线性插值舵机运动
-		servo_move_test(servo_move_cubic);  // 测试三次缓动舵机运动
-		servo_move_test(servo_move_quintic); // 测试五次缓动舵机运动
-		servo_move_test(servo_move_sine);  // 测试正弦缓动舵机运动
-		servo_move_test(servo_move_trapezoidal); // 测试梯形速度规划舵机运动
+		show_menu();
+		u0_printf("\nSelect algorithm (0-5): ");
+		
+		// 等待用户输入
+		uint16_t recv_len = 0;
+		uint8_t input_buffer[10] = {0};
+		recv_len = receive_string(input_buffer, 10);
+		
+		if(recv_len > 0)
+		{
+			uint8_t choice = input_buffer[0] - '0';  // 将ASCII转为数字
+			
+			if(choice >= 0 && choice <= 5)
+			{
+				servo_test_algorithm(choice);
+			}
+			else
+			{
+				u0_printf("Invalid input! Please select 0-5.\r\n");
+			}
+		}
+	}
+}
+
+// 显示菜单
+void show_menu(void)
+{
+	u0_printf("\r\n========== TEST MENU ==========\r\n");
+	u0_printf("1. Linear Motion      (匀速)\r\n");
+	u0_printf("2. Cubic Easing       (三次缓动)\r\n");
+	u0_printf("3. Quintic Easing     (五次缓动)\r\n");
+	u0_printf("4. Sine Easing        (正弦缓动)\r\n");
+	u0_printf("5. Trapezoidal Motion (梯形规划)\r\n");
+	u0_printf("0. Raw Control        (直接控制)\r\n");
+	u0_printf("==============================\r\n");
+}
+
+// 测试单个算法
+void servo_test_algorithm(uint8_t algorithm)
+{
+	switch(algorithm)
+	{
+		case 0:  // 直接控制
+			u0_printf("\n--- Raw Control Test ---\r\n");
+			servo_move_raw(0);
+			delay_1ms(1000);
+			servo_move_raw(90);
+			delay_1ms(1000);
+			servo_move_raw(180);
+			delay_1ms(1000);
+			servo_move_raw(90);
+			delay_1ms(1000);
+			break;
+			
+		case 1:  // 线性运动
+			u0_printf("\n--- Linear Motion Test (2000ms) ---\r\n");
+			servo_move_linear(90.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_linear(180.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_linear(0.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			u0_printf("Test completed!\r\n");
+			break;
+			
+		case 2:  // 三次缓动
+			u0_printf("\n--- Cubic Easing Test (2000ms) ---\r\n");
+			servo_move_cubic(90.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_cubic(180.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_cubic(0.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			u0_printf("Test completed!\r\n");
+			break;
+			
+		case 3:  // 五次缓动
+			u0_printf("\n--- Quintic Easing Test (2000ms) ---\r\n");
+			servo_move_quintic(90.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_quintic(180.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_quintic(0.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			u0_printf("Test completed!\r\n");
+			break;
+			
+		case 4:  // 正弦缓动
+			u0_printf("\n--- Sine Easing Test (2000ms) ---\r\n");
+			servo_move_sine(90.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_sine(180.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_sine(0.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			u0_printf("Test completed!\r\n");
+			break;
+			
+		case 5:  // 梯形速度规划
+			u0_printf("\n--- Trapezoidal Motion Test (2000ms) ---\r\n");
+			servo_move_trapezoidal(90.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_trapezoidal(180.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			
+			servo_move_trapezoidal(0.0, 2000);
+			while(servo.is_moving) delay_1ms(10);
+			delay_1ms(500);
+			u0_printf("Test completed!\r\n");
+			break;
+			
+		default:
+			u0_printf("Unknown algorithm!\r\n");
 	}
 }
 
@@ -51,28 +174,4 @@ void TIMER2_IRQHandler(void)
         // user code
 		servo_update(); // 更新舵机位置
     }
-}
-
-void servo_move_test(void (*function) (float target_angle, uint32_t duration_ms))
-{
-	// function(90.0, 2000); // 以指定算法将舵机移动到90度，持续时间2000ms
-	// while(servo.is_moving); // 等待运动完成
-	// delay_1ms(1000); // 运动完成后延时1秒
-	function(180.0, 2000); // 以指定算法将舵机移动到180度，持续时间2000ms
-	while(servo.is_moving)
-	{
-		u0_printf("Current Angle: %.2f, Step: %d/%d\r\n", servo.current_angle, servo.now_step, servo.total_steps);
-		delay_1ms(10); // 每100ms打印一次当前角度和步
-	} // 等待运动完成
-	delay_1ms(1000); // 运动完成后延时1秒
-	// function(90.0, 2000); // 以指定算法将舵机移动到90度，持续时间2000ms
-	// while(servo.is_moving); // 等待运动完成
-	// delay_1ms(1000); // 运动完成后延时1秒
-	function(0.0, 2000); // 以指定算法将舵机移动到0度，持续时间2000ms
-	while(servo.is_moving)
-	{
-		u0_printf("Current Angle: %.2f, Step: %d/%d\r\n", servo.current_angle, servo.now_step, servo.total_steps);
-		delay_1ms(10); // 每100ms打印一次当前角度和步
-	} // 等待运动完成
-	delay_1ms(1000); // 运动完成后延时1秒
 }

@@ -16,6 +16,9 @@ typedef struct{
     // 梯形速度规划
     float max_speed;                // 最大速度 
     float max_acceleration;         // 最大加速度
+    
+    // 运动完成标志（用于控制结束时只执行一次角度修正）
+    uint8_t end_flag;               // 0=未完成，1=已完成一次修正，待置零
 }Servo_TypeDef;
 
 extern Servo_TypeDef servo;

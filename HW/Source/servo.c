@@ -50,6 +50,7 @@ void servo_move_linear(float target_angle, uint32_t duration_ms)
     servo.total_steps = duration_ms / 10;  // 每10ms更新一次
     if(servo.total_steps == 0) servo.total_steps = 1; // 最少1步
     servo.now_step = 0;
+    servo.end_flag = 0;
     servo.is_moving = 10; // 假设10代表线性插值算法
 }
 
@@ -65,6 +66,7 @@ void servo_move_cubic(float target_angle, uint32_t duration_ms)
     servo.total_steps = duration_ms / 10;  // 每10ms更新一次
     if(servo.total_steps == 0) servo.total_steps = 1; // 最少1步
     servo.now_step = 0;
+    servo.end_flag = 0;
     servo.is_moving = 11; // 假设11代表三次缓动算法
 }
 
@@ -80,6 +82,7 @@ void servo_move_quintic(float target_angle, uint32_t duration_ms)
     servo.total_steps = duration_ms / 10;  // 每10ms更新一次
     if(servo.total_steps == 0) servo.total_steps = 1; // 最少1步
     servo.now_step = 0;
+    servo.end_flag = 0;
     servo.is_moving = 12; // 假设12代表五次缓动算法
 }
 
@@ -95,6 +98,7 @@ void servo_move_sine(float target_angle, uint32_t duration_ms)
     servo.total_steps = duration_ms / 10;  // 每10ms更新一次
     if(servo.total_steps == 0) servo.total_steps = 1; // 最少1步
     servo.now_step = 0;
+    servo.end_flag = 0;
     servo.is_moving = 13; // 假设13代表正弦缓动算法
 }
 
@@ -110,6 +114,7 @@ void servo_move_trapezoidal(float target_angle, uint32_t duration_ms)
     servo.total_steps = duration_ms / 10;  // 每10ms更新一次
     if(servo.total_steps == 0) servo.total_steps = 1; // 最少1步
     servo.now_step = 0;
+    servo.end_flag = 0;
     servo.is_moving = 14; // 假设14代表梯形速度算法
 
     // 自动计算最大速度与最大加速度
@@ -127,7 +132,6 @@ void servo_move_trapezoidal(float target_angle, uint32_t duration_ms)
 void servo_update(void)
 {
     if(servo.is_moving == 0) return; // 不在运动中
-    static uint8_t flag = 0; // 用于控制运动结束时的角度修正只执行一次
 
     switch(servo.is_moving)
     { 
@@ -138,12 +142,12 @@ void servo_update(void)
                 servo.current_angle = servo.start_angle + Linear(t) * (servo.end_angle - servo.start_angle);      
                 servo.now_step++;
             } else {
-                // 运动结束，精确对准目标角度, else 执行第二次时再把 servo.is_moving 置为0，避免其置0后，while循环直接退出，导致 current_angle 无法精确对准 end_angle
-                if(flag == 0){
+                // 运动结束，精确对准目标角度
+                if(servo.end_flag == 0){
                     servo.current_angle = servo.end_angle;
-                    flag = 1;
+                    servo.end_flag = 1;
                 } else {
-                    flag = 0;
+                    servo.end_flag = 0;
                     servo.is_moving = 0;
                 }
             }
@@ -155,12 +159,12 @@ void servo_update(void)
                 servo.current_angle = servo.start_angle + Cubic(t) * (servo.end_angle - servo.start_angle);
                 servo.now_step++;
             } else {
-                // 运动结束，精确对准目标角度, else 执行第二次时再把 servo.is_moving 置为0，避免其置0后，while循环直接退出，导致 current_angle 无法精确对准 end_angle
-                if(flag == 0){
+                // 运动结束，精确对准目标角度
+                if(servo.end_flag == 0){
                     servo.current_angle = servo.end_angle;
-                    flag = 1;
+                    servo.end_flag = 1;
                 } else {
-                    flag = 0;
+                    servo.end_flag = 0;
                     servo.is_moving = 0;
                 }
             }
@@ -172,12 +176,12 @@ void servo_update(void)
                 servo.current_angle = servo.start_angle + Quintic(t) * (servo.end_angle - servo.start_angle);
                 servo.now_step++;
             } else {
-                // 运动结束，精确对准目标角度, else 执行第二次时再把 servo.is_moving 置为0，避免其置0后，while循环直接退出，导致 current_angle 无法精确对准 end_angle
-                if(flag == 0){
+                // 运动结束，精确对准目标角度
+                if(servo.end_flag == 0){
                     servo.current_angle = servo.end_angle;
-                    flag = 1;
+                    servo.end_flag = 1;
                 } else {
-                    flag = 0;
+                    servo.end_flag = 0;
                     servo.is_moving = 0;
                 }
             }
@@ -189,12 +193,12 @@ void servo_update(void)
                 servo.current_angle = servo.start_angle + Sine(t) * (servo.end_angle - servo.start_angle);
                 servo.now_step++;
             } else {
-                // 运动结束，精确对准目标角度, else 执行第二次时再把 servo.is_moving 置为0，避免其置0后，while循环直接退出，导致 current_angle 无法精确对准 end_angle
-                if(flag == 0){
+                // 运动结束，精确对准目标角度
+                if(servo.end_flag == 0){
                     servo.current_angle = servo.end_angle;
-                    flag = 1;
+                    servo.end_flag = 1;
                 } else {
-                    flag = 0;
+                    servo.end_flag = 0;
                     servo.is_moving = 0;
                 }
             }
@@ -214,12 +218,12 @@ void servo_update(void)
                 servo.current_angle = servo.start_angle + servo.max_speed * (servo.now_step - 0.8f * servo.total_steps) - 0.5f * servo.max_acceleration * (servo.now_step - 0.8f * servo.total_steps) * (servo.now_step - 0.8f * servo.total_steps); // s = s1 + v*t - 0.5*a*t^2
                 servo.now_step++;
             } else {
-                // 运动结束，精确对准目标角度, else 执行第二次时再把 servo.is_moving 置为0，避免其置0后，while循环直接退出，导致 current_angle 无法精确对准 end_angle
-                if(flag == 0){
+                // 运动结束，精确对准目标角度
+                if(servo.end_flag == 0){
                     servo.current_angle = servo.end_angle;
-                    flag = 1;
+                    servo.end_flag = 1;
                 } else {
-                    flag = 0;
+                    servo.end_flag = 0;
                     servo.is_moving = 0;
                 }
             }
